@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>植物日誌</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f1;--card:#fff;--ink:#16302b;--sub:#6b807b;--line:#dde7e4;--acc:#2f7fd1;--accbg:#e3effb;--warn:#d9822b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+:root[data-tab="fert"]{--acc:#6c8f1f;--accbg:#eaf1d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1816;--card:#18262a;--ink:#e6f0ee;--sub:#8ea5a0;--line:#26373a;--acc:#5aa6f0;--accbg:#173250;--warn:#f0a050;color-scheme:dark}
+:root:not([data-theme="light"])[data-tab="fert"]{--acc:#a3c653;--accbg:#2a3516}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{padding:14px 18px 0}
+h1{font-size:22px;margin:0 0 12px;font-weight:700}
+.tabs{display:flex;position:relative;background:var(--card);border-radius:14px;padding:4px;border:1px solid var(--line)}
+.tabs button{flex:1;border:0;background:none;color:var(--sub);font:500 15px inherit;font-family:inherit;padding:10px 0;z-index:1;cursor:pointer;transition:color .2s}
+.tabs button.on{color:#fff}
+.pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--acc);border-radius:11px;transition:transform .25s ease}
+[data-tab="fert"] .pill{transform:translateX(100%)}
+main{flex:1;min-height:0;display:flex;gap:0;padding:14px 0 0}
+aside{width:118px;flex:none;overflow-y:auto;padding:0 8px 24px 14px;display:flex;flex-direction:column;gap:8px}
+.tag{position:relative;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:8px 4px 7px;text-align:center;font-family:inherit;cursor:pointer;width:100%}
+.tag.on{background:var(--accbg);border-color:var(--acc)}
+.tag .th{width:60px;height:60px;border-radius:14px;font-size:30px;margin:0 auto 6px}
+.tag b{display:block;font-size:13px;line-height:1.3;font-weight:500;white-space:normal;word-break:break-all}
+.tag.on b{font-weight:700}
+.tag .dot{position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:var(--warn);border:2px solid var(--card)}
+.tag.new{border-style:dashed;color:var(--sub);background:none;font-size:13px;padding:12px 4px}
+.tag.new span{display:block;font-size:22px;line-height:1.1}
+.th{background:var(--accbg);display:grid;place-items:center;overflow:hidden}
+.th svg{width:100%;height:100%;display:block}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.detail{flex:1;min-width:0;overflow-y:auto;padding:0 18px 40px 6px}
+.dh{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dh .th{width:60px;height:60px;border-radius:16px;font-size:32px;flex:none}
+.dh h2{margin:0;font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dh p{margin:2px 0 0;font-size:13px;color:var(--acc);font-weight:500}
+.dh p.late{color:var(--warn)}
+.dh .ed{margin-left:auto;border:1px solid var(--line);background:none;color:var(--sub);border-radius:10px;padding:6px 9px;font:13px inherit;font-family:inherit;cursor:pointer;flex:none}
+.btns{display:flex;gap:8px;margin-bottom:14px}
+.btns button{font-family:inherit;border-radius:12px;padding:11px 10px;font-size:14px;font-weight:500;cursor:pointer}
+.main{flex:1;background:var(--acc);color:#fff;border:0}
+.alt{background:none;border:1px solid var(--line);color:var(--sub)}
+.sec{font-size:13px;color:var(--sub);margin:0 0 6px}
+.rec{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 8px 10px 12px;margin-bottom:8px}
+.rec .d{flex:1;min-width:0}
+.rec .d b{display:block;font-size:15px}
+.rec .d span{font-size:12px;color:var(--sub)}
+.rec .ago{font-size:13px;color:var(--acc);font-weight:500;white-space:nowrap}
+.rec button{border:0;background:none;color:var(--sub);font-size:18px;padding:0 6px;cursor:pointer}
+.rec.first{border-color:var(--acc)}
+.none{font-size:13px;color:var(--sub);padding:14px 0}
+.empty{text-align:center;color:var(--sub);padding:48px 12px;line-height:1.7;font-size:14px}
+.pic{display:flex;align-items:center;gap:10px;margin-top:10px}
+.pic label{margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;color:var(--ink);cursor:pointer}
+.pic .pv{width:44px;height:44px;border-radius:10px;object-fit:cover;background:var(--bg)}
+.pic button{border:0;background:none;color:var(--sub);font:13px inherit;font-family:inherit;cursor:pointer}
+dialog{border:0;border-radius:20px;padding:20px;width:min(92vw,360px);background:var(--card);color:var(--ink);font-family:inherit}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin:0 0 14px;font-size:18px}
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 6px}
+input{width:100%;font:16px inherit;font-family:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.emo{display:flex;flex-wrap:wrap;gap:6px}
+.emo button{font-size:24px;width:44px;height:44px;border-radius:12px;border:2px solid transparent;background:var(--bg);cursor:pointer}
+.emo button.on{border-color:var(--acc)}
+.row2{display:flex;gap:10px}
+.row2>div{flex:1}
+.dact{display:flex;gap:8px;margin-top:18px}
+.dact button{flex:1;font:500 15px inherit;font-family:inherit;padding:11px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--ink);cursor:pointer}
+.dact .ok{background:var(--acc);border-color:var(--acc);color:#fff}
+.dact .del{color:#d04a3a;flex:none;padding:11px 14px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌿 植物日誌</h1>
+  <div class="tabs"><div class="pill"></div>
+    <button class="on" data-t="water">💧 澆水</button>
+    <button data-t="fert">🌱 施肥</button>
+  </div>
+</header>
+<main>
+  <aside id="side"></aside>
+  <section class="detail" id="detail"></section>
+</main>
+
+<dialog id="dp">
+  <h2 id="dpT">新增植物</h2>
+  <label>名稱</label><input id="fName" placeholder="例如：龜背芋" maxlength="20">
+  <label>縮圖（預設為插圖；可上傳照片或改選圖示）</label><div class="emo" id="fEmo"></div>
+  <div class="pic"><img class="pv" id="fPv" alt="" hidden><label for="fPic">📷 上傳照片</label><input type="file" id="fPic" accept="image/*" hidden><button type="button" id="fPicX" hidden>移除照片</button></div>
+  <div class="row2">
+    <div><label>澆水週期（天）</label><input id="fW" type="number" min="1" max="90" value="7"></div>
+    <div><label>施肥週期（月）</label><input id="fF" type="number" min="1" max="24" value="3"></div>
+  </div>
+  <div class="dact"><button class="del" id="fDel" hidden>刪除</button><button id="fNo">取消</button><button class="ok" id="fOk">儲存</button></div>
+</dialog>
+
+<dialog id="dr">
+  <h2 id="drT">補記時間</h2>
+  <label>日期</label><input id="rTime" type="date">
+  <div class="dact"><button id="rNo">取消</button><button class="ok" id="rOk">記錄</button></div>
+</dialog>
+
+<script>
+(function(){
+var KEY="plantcare.v2", DAY=864e5, EMOJIS=["🪴","🌿","🌵","🍃","🌱","🌳","🌼","🍀","🌸","🌴"];
+var origEmo="", tab="water", sel=null, plants=[], editId=null, photo="", emo=EMOJIS[0], recTarget=null, delArm=false;
+var root=document.documentElement;
+
+
+/* 手繪植物插圖 */
+function rnd(i){var x=Math.sin(i*12.9898)*43758.5453;return x-Math.floor(x)}
+function lf(x,y,l,w,a,f,o){o=o||{};
+  var d='C'+w+' '+(-l*.3)+' '+w+' '+(-l*.7)+' 0 '+(-l);
+  var g='<g transform="translate('+x+' '+y+') rotate('+a+')"><path d="M0 0'+d+'C'+(-w)+' '+(-l*.7)+' '+(-w)+' '+(-l*.3)+' 0 0Z" fill="'+f+'" stroke="'+(o.s||'rgba(0,0,0,.22)')+'" stroke-width=".6"/><path d="M0 0'+d+'Z" fill="#fff" opacity=".13"/>';
+  if(o.v)g+='<path d="M0 -1L0 '+(-l*.92)+'" stroke="'+o.v+'" stroke-width=".9" fill="none"/>';
+  if(o.b)for(var t=.2;t<.9;t+=.16){var hw=w*.8*Math.sin(Math.PI*t);g+='<path d="M'+(-hw)+' '+(-l*t)+'L'+hw+' '+(-l*t)+'" stroke="'+o.b+'" stroke-width="1.1" opacity=".85"/>'}
+  return g+'</g>'}
+function heart(x,y,sz,a,f,o){o=o||{};var g='<g transform="translate('+x+' '+y+') rotate('+a+') scale('+(sz/20)+')"><path d="M0 0C-11 -5 -13 -17 -6 -19C-2.5 -20 0 -17 0 -14.5C0 -17 2.5 -20 6 -19C13 -17 11 -5 0 0Z" fill="'+f+'" stroke="rgba(0,0,0,.25)" stroke-width=".8"/>';
+  if(o.pt)g+='<ellipse cx="-4" cy="-11" rx="3.4" ry="4.5" fill="'+o.pt+'" opacity=".7"/><ellipse cx="5" cy="-8" rx="2.6" ry="3.4" fill="'+o.pt+'" opacity=".6"/>';
+  if(o.sp)[[-5,-12],[4,-14],[-2,-6],[5,-8],[-7,-16],[2,-17],[-1,-11]].forEach(function(q){g+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="1.5" fill="'+o.sp+'" opacity=".85"/>'});
+  return g+'<path d="M0 -1L0 -15" stroke="'+(o.v||'rgba(255,255,255,.35)')+'" stroke-width=".8"/></g>'}
+function frond(x0,y0,cx,cy,x1,y1,col,n,ll){
+  var h='<path d="M'+x0+' '+y0+'Q'+cx+' '+cy+' '+x1+' '+y1+'" stroke="#3d6b34" stroke-width="1" fill="none"/>';
+  for(var i=1;i<=n;i++){var t=i/n*.95+.05,m=1-t,
+    px=m*m*x0+2*m*t*cx+t*t*x1, py=m*m*y0+2*m*t*cy+t*t*y1,
+    dx=2*m*(cx-x0)+2*t*(x1-cx), dy=2*m*(cy-y0)+2*t*(y1-cy), a=Math.atan2(dx,-dy)*180/Math.PI, l=ll*(1-t*.55);
+    h+=lf(px,py,l,2.4,a+58,col)+lf(px,py,l,2.4,a-58,col)}
+  return h+lf(x1,y1,ll*.5,2.2,Math.atan2(x1-cx,-(y1-cy))*180/Math.PI,col)}
+function pot(c,r,w){w=w||36;var x=50-w/2;
+  return '<path d="M'+x+' 73L'+(x+w)+' 73L'+(x+w-4)+' 95Q50 98 '+(x+4)+' 95Z" fill="'+c+'"/><path d="M'+(x+w*.62)+' 73L'+(x+w)+' 73L'+(x+w-4)+' 95Q'+(50+w*.2)+' 97 '+(50+w*.12)+' 95.5Z" fill="#000" opacity=".12"/><rect x="'+(x-3)+'" y="69" width="'+(w+6)+'" height="7" rx="2" fill="'+r+'"/>'}
+var BG='<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0e8"/><stop offset="1" stop-color="#d8d1c3"/></linearGradient></defs><rect width="100" height="100" fill="url(#bg)"/><rect y="95" width="100" height="5" fill="#b49f80"/>';
+function vine(list,f,o,pc,pr){
+  var h='';list.forEach(function(q){h+='<path d="M50 72Q'+((50+q[0])/2)+' '+(q[1]+(q[3]>90?-10:12))+' '+q[0]+' '+q[1]+'" stroke="#4d7a3a" stroke-width="1" fill="none"/>'});
+  list.forEach(function(q){h+=heart(q[0],q[1],q[2],q[3],f,o)});
+  return h+pot(pc,pr)}
+function tri(x,y,s,a){return '<g transform="translate('+x+' '+y+') rotate('+a+') scale('+s+')"><path d="M0 0L-7 -12Q0 -17 7 -12Z" fill="#f4eec4" stroke="rgba(0,0,0,.22)" stroke-width=".7"/><path d="M0 -2L-4 -10Q0 -13 4 -10Z" fill="#6aa84f"/></g>'}
+var ART={
+ haworthia:function(){var h='',i,a;for(i=0;i<14;i++){a=-72+i*11;h+=lf(50,73,27-Math.abs(a)*.12,5.5,a,'#2d5a37',{b:'#e6efe3'})}
+   for(i=0;i<9;i++){a=-48+i*12;h+=lf(50,74,21,5,a,'#3d7242',{b:'#eef4ea'})}return h+pot('#eeeae2','#fff',30)},
+ generic:function(){var h='',A=[-62,-40,-20,0,20,40,62],i;for(i=0;i<7;i++)h+=lf(50,72,36-Math.abs(A[i])*.25,10,A[i],'#4f8f4a',{v:'#a8d28d'});return h+pot('#c4714a','#d4835b')},
+ fern:function(){var h='',E=[[22,56,12,66],[20,46,16,36],[38,38,32,20],[50,38,50,16],[62,38,68,20],[80,46,84,36],[78,56,88,66]];E.forEach(function(e){h+=frond(50,72,e[0],e[1],e[2],e[3],'#4f9a3c',11,9)});return h+pot('#d9d2c5','#e9e3d8')},
+ pothos:function(){return vine([[50,34,17,0],[36,44,16,-32],[64,42,16,30],[27,58,14,-62],[74,56,14,64],[22,76,13,200],[78,78,13,160],[16,90,11,185]],'#7db541',{pt:'#f0e169'},'#c4714a','#d4835b')},
+ spider:function(){var h='',D=[-34,-27,-20,-12,-4,5,13,21,28,35],i,dx,hh;for(i=0;i<D.length;i++){dx=D[i];hh=30+rnd(i)*12;var p='M50 72Q'+(50+dx*.45)+' '+(72-hh)+' '+(50+dx*1.1)+' '+(68+Math.abs(dx)*.6);
+   h+='<path d="'+p+'" stroke="#5f9f40" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="'+p+'" stroke="#eef5dc" stroke-width="1.2" fill="none" stroke-linecap="round"/>'}return h+pot('#d9d2c5','#e9e3d8')},
+ scindapsus:function(){return vine([[50,36,16,0],[34,46,15,-35],[66,44,15,35],[24,62,14,-70],[76,60,14,70],[20,82,13,195],[80,80,13,165],[34,90,11,200]],'#2f6b4a',{sp:'#d4e6da',v:'rgba(210,230,215,.5)'},'#8a8f94','#a2a7ac')},
+ peace:function(){var h='',A=[-52,-36,-20,-6,8,22,38,54],i;for(i=0;i<8;i++)h+=lf(50,72,38+rnd(i)*8,9.5,A[i],'#245f36',{v:'#7fb283'});
+   h+='<path d="M50 72Q47 58 44 46" stroke="#3c7a45" stroke-width="1.4" fill="none"/><path d="M52 72Q57 58 61 42" stroke="#3c7a45" stroke-width="1.4" fill="none"/>'+lf(44,48,24,6.2,-6,'#f8f6ef',{s:'#d6d3c4'})+lf(61,44,20,5.4,8,'#f8f6ef',{s:'#d6d3c4'})+'<ellipse cx="44" cy="43" rx="1.4" ry="4" fill="#e6d680"/>';return h+pot('#777c80','#8f9498')},
+ fiddle:function(){var h='<path d="M50 74Q48 50 48 26" stroke="#6b5036" stroke-width="3" fill="none" stroke-linecap="round"/>',y,s=1;for(y=62;y>=32;y-=7){h+=lf(49,y,22,11,s*(58-(62-y)*.5),'#3f7d34',{v:'#b5d69a'});s=-s}return h+lf(48,28,22,10,0,'#3f7d34',{v:'#b5d69a'})+pot('#cdb89a','#dbc9ad')},
+ triangle:function(){var h='',i,a,r,pts=[];for(i=0;i<18;i++){a=-68+i*8;r=16+rnd(i+3)*22;pts.push([50+Math.sin(a*Math.PI/180)*r,70-Math.cos(a*Math.PI/180)*r,a])}
+   pts.forEach(function(q){h+='<path d="M50 72L'+q[0]+' '+q[1]+'" stroke="#7a6a50" stroke-width=".9"/>'});
+   pts.forEach(function(q,i){h+=tri(q[0],q[1],.85+rnd(i)*.4,q[2]+(rnd(i+9)-.5)*70)});return h+pot('#c4714a','#d4835b')},
+ snake:function(){var h='',L=[[-15,38,-10],[-7,50,-4],[2,58,1],[11,46,7],[19,34,13]];L.forEach(function(q){h+=lf(50+q[0],73,q[1],6.2,q[2],'#2f6a43',{b:'#8dbf93',s:'#d6c24f'})});return h+pot('#6d7377','#868c90')},
+ staghorn:function(){var G='stroke="#5f9a47" stroke-width="5" fill="none" stroke-linecap="round"',h='<rect x="16" y="6" width="68" height="88" rx="12" fill="#8a6a45"/><path d="M26 14V86M40 10V90M60 10V90M74 14V86" stroke="#6f5434" stroke-width="1" opacity=".5"/>';
+   h+='<path d="M50 62Q42 42 32 28M42 46Q34 42 24 44M32 28Q26 22 22 14M32 28Q35 20 37 14" '+G+'/><path d="M50 62Q58 42 68 28M58 46Q66 42 76 44M68 28Q74 22 78 14M68 28Q65 20 63 14" '+G+'/><path d="M50 62Q50 44 50 30M50 40Q44 34 42 26M50 40Q56 34 58 26" '+G+'/>';
+   return h+'<ellipse cx="50" cy="72" rx="22" ry="15" fill="#7aa35b" stroke="rgba(0,0,0,.25)" stroke-width=".8"/><path d="M50 60V86M38 66L50 76L62 66M32 74L50 80L68 74" stroke="#a9cc88" stroke-width="1" fill="none"/>'},
+};
+var ARTBYNAME={"十二之卷":"haworthia","峨眉山":"generic","波士頓腎蕨":"fern","黃金葛":"pothos","吊蘭":"spider","銀斑葛":"scindapsus","薄冰白鶴芋":"peace","琴葉榕":"fiddle","斑葉三角榕":"triangle","虎尾蘭":"snake","鹿角蕨":"staghorn"};
+function artSvg(k){var ns='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">';return ns+(k==="staghorn"?'<rect width="100" height="100" fill="#e6e0d3"/>':BG)+ART[k]()+'</svg>'}
+
+function load(){
+  try{var s=localStorage.getItem(KEY); if(s){plants=JSON.parse(s);plants.forEach(function(p){if(p.art===undefined&&ARTBYNAME[p.name])p.art=ARTBYNAME[p.name]});return}}catch(e){}
+  var Y=2026;
+  function D(s){return s.split(" ").map(function(x){var a=x.split("/");return new Date(Y,+a[0]-1,+a[1],12).getTime()})}
+  var F0=D("8/15");
+  function P(id,name,emoji,wEvery,water,extraFert){return {id:id,name:name,emoji:emoji,art:ARTBYNAME[name]||"",wEvery:wEvery,fMonths:3,water:water?D(water):[],fert:F0.concat(extraFert?D(extraFert):[])}}
+  plants=[
+    P(1,"十二之卷","🌵",14,""),
+    P(2,"峨眉山","🌿",7,""),
+    P(3,"波士頓腎蕨","🍃",5,""),
+    P(4,"黃金葛","🌱",7,""),
+    P(5,"吊蘭","🍃",7,"9/1 9/8 9/17 9/24 9/30 10/5 10/10 10/17 10/29"),
+    P(6,"銀斑葛","🌱",5,"8/26 8/31 9/7 9/17 9/27 10/1 10/6 10/12 10/17 10/20 10/26 10/29"),
+    P(7,"薄冰白鶴芋","🌼",9,"8/26 9/7 9/17 9/27 10/7 10/15 10/21 10/26","9/17"),
+    P(8,"琴葉榕","🌳",8,"7/18 7/27 8/2 8/10 8/16 8/26 9/3 9/13 9/22 9/30 10/8 10/17"),
+    P(9,"斑葉三角榕","🌳",7,"8/5 8/9 8/16 8/24 8/30 9/8 9/17 9/24 9/30 10/6 10/14 10/22"),
+    P(10,"虎尾蘭","🌵",20,"8/20 9/13 9/30 10/20"),
+    P(11,"鹿角蕨","🌿",8,"9/10 9/18 9/24 10/1 10/10 10/18 10/26")
+  ];
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(plants))}catch(e){}}
+
+function pad(x){return x<10?"0"+x:""+x}
+function fmt(t){var d=new Date(t),w="日一二三四五六"[d.getDay()];return (d.getMonth()+1)+"/"+d.getDate()+" 週"+w+" "+pad(d.getHours())+":"+pad(d.getMinutes())}
+function ago(t){
+  var a=new Date(t), b=new Date(); a.setHours(0,0,0,0); b.setHours(0,0,0,0);
+  var n=Math.round((b-a)/DAY); return n<=0?"今天":n===1?"昨天":n+" 天前";
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function thumb(p){return '<div class="th">'+(p.photo?'<img src="'+p.photo+'" alt="">':(p.art&&ART[p.art])?artSvg(p.art):p.emoji)+'</div>'}
+function day0(t){var d=new Date(t);d.setHours(0,0,0,0);return d}
+function info(p,k){
+  var list=(p[k]||[]).slice().sort(function(a,b){return b-a}), last=list[0];
+  var verb=k==="water"?"澆水":"施肥", st="尚無"+verb+"紀錄", late=false;
+  if(last){
+    var due=day0(last);
+    if(k==="water")due.setDate(due.getDate()+p.wEvery); else due.setMonth(due.getMonth()+(p.fMonths||3));
+    var left=Math.round((due-day0(Date.now()))/DAY), ds=(due.getMonth()+1)+"/"+due.getDate();
+    if(left>0)st="下次"+verb+" "+ds+"（還有 "+left+" 天）";
+    else if(left===0)st="今天該"+verb+"了";
+    else{st="應於 "+ds+" "+verb+"，已逾期 "+(-left)+" 天";late=true}
+  }
+  return {list:list,st:st,late:late,verb:verb};
+}
+function render(){
+  root.setAttribute("data-tab",tab);
+  document.querySelectorAll(".tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.t===tab)});
+  if(!plants.some(function(x){return x.id===sel}))sel=plants[0]?plants[0].id:null;
+  var side=document.getElementById("side"), det=document.getElementById("detail");
+  side.innerHTML=plants.map(function(p){
+    return '<button class="tag'+(p.id===sel?" on":"")+'" data-sel="'+p.id+'">'+(info(p,tab).late?'<i class="dot"></i>':'')+thumb(p)+'<b>'+esc(p.name)+'</b></button>';
+  }).join("")+'<button class="tag new" data-new="1"><span>＋</span>新增</button>';
+  var p=plants.find(function(x){return x.id===sel});
+  if(!p){det.innerHTML='<div class="empty">還沒有植物<br>點左側的「＋ 新增」</div>';return}
+  var i=info(p,tab), icon=tab==="water"?"💧 ":"🌱 ";
+  var h='<div class="dh">'+thumb(p)+'<div style="min-width:0"><h2>'+esc(p.name)+'</h2><p class="'+(i.late?"late":"")+'">'+i.st+'</p></div><button class="ed" data-edit="'+p.id+'">編輯</button></div>'+
+    '<div class="btns"><button class="main" data-now="'+p.id+'">'+icon+'已'+i.verb+'</button><button class="alt" data-late="'+p.id+'">補記</button></div>'+
+    '<p class="sec">最近 5 次'+i.verb+'</p>';
+  h+=i.list.length?i.list.slice(0,5).map(function(t,n){
+    var d=new Date(t);
+    return '<div class="rec'+(n?"":" first")+'"><div class="d"><b>'+(d.getMonth()+1)+'/'+d.getDate()+' 週'+"日一二三四五六"[d.getDay()]+'</b></div><span class="ago">'+ago(t)+'</span><button data-del="'+p.id+'|'+t+'" aria-label="刪除這筆紀錄">×</button></div>';
+  }).join(""):'<div class="none">還沒有紀錄，按上方按鈕開始記錄。</div>';
+  det.innerHTML=h;
+}
+
+/* 記錄 */
+function addRec(id,k,t){
+  var p=plants.find(function(x){return x.id===id}); if(!p)return;
+  p[k].push(t); save(); render();
+}
+document.addEventListener("click",function(e){
+  var el=e.target.closest("[data-sel],[data-new],[data-now],[data-late],[data-del],[data-edit]"); if(!el)return;
+  var d=el.dataset;
+  if(d.sel){sel=+d.sel;render();document.getElementById("detail").scrollTop=0}
+  else if(d.new)openPlant(null);
+  else if(d.now)addRec(+d.now,tab,Date.now());
+  else if(d.late){
+    recTarget=+d.late; var n=new Date(); n.setMinutes(n.getMinutes()-n.getTimezoneOffset());
+    var rt=document.getElementById("rTime"); rt.max=rt.value=n.toISOString().slice(0,10);
+    document.getElementById("drT").textContent=tab==="water"?"補記澆水日期":"補記施肥日期";
+    document.getElementById("dr").showModal();
+  }else if(d.del){
+    var a=d.del.split("|"), p=plants.find(function(x){return x.id===+a[0]});
+    p[tab]=p[tab].filter(function(t){return String(t)!==a[1]}); save(); render();
+  }else if(d.edit)openPlant(+d.edit);
+});
+document.getElementById("rNo").onclick=function(){document.getElementById("dr").close()};
+document.getElementById("rOk").onclick=function(){
+  var v=document.getElementById("rTime").value.split("-"), t=v.length===3?new Date(+v[0],+v[1]-1,+v[2],12).getTime():NaN;
+  if(!isNaN(t))addRec(recTarget,tab,Math.min(t,Date.now()));
+  document.getElementById("dr").close();
+};
+
+/* 植物表單 */
+function drawEmo(){
+  document.getElementById("fEmo").innerHTML=EMOJIS.map(function(x){return '<button type="button" class="'+(x===emo?"on":"")+'" data-e="'+x+'">'+x+'</button>'}).join("");
+}
+document.getElementById("fEmo").onclick=function(e){var b=e.target.closest("[data-e]");if(b){emo=b.dataset.e;drawEmo()}};
+function openPlant(id){
+  editId=id||null; delArm=false;
+  var p=plants.find(function(x){return x.id===id});
+  document.getElementById("dpT").textContent=p?"編輯植物":"新增植物";
+  document.getElementById("fName").value=p?p.name:"";
+  document.getElementById("fW").value=p?p.wEvery:7;
+  document.getElementById("fF").value=p?(p.fMonths||3):3;
+  emo=p?p.emoji:EMOJIS[0]; origEmo=emo; photo=p&&p.photo||""; drawEmo(); drawPic();
+  var del=document.getElementById("fDel"); del.hidden=!p; del.textContent="刪除";
+  document.getElementById("dp").showModal();
+}
+function drawPic(){
+  var pv=document.getElementById("fPv");
+  pv.hidden=!photo; if(photo)pv.src=photo;
+  document.getElementById("fPicX").hidden=!photo;
+}
+document.getElementById("fPicX").onclick=function(){photo="";drawPic()};
+document.getElementById("fPic").onchange=function(){
+  var f=this.files[0]; this.value=""; if(!f)return;
+  var img=new Image(), u=URL.createObjectURL(f);
+  img.onload=function(){
+    var S=200, c=document.createElement("canvas"), m=Math.min(img.width,img.height);
+    c.width=c.height=S;
+    c.getContext("2d").drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
+    photo=c.toDataURL("image/jpeg",0.8); URL.revokeObjectURL(u); drawPic();
+  };
+  img.src=u;
+};
+document.getElementById("fNo").onclick=function(){document.getElementById("dp").close()};
+document.getElementById("fDel").onclick=function(){
+  if(!delArm){delArm=true;this.textContent="再按一次確認";return}
+  plants=plants.filter(function(x){return x.id!==editId}); save(); render(); document.getElementById("dp").close();
+};
+document.getElementById("fOk").onclick=function(){
+  var name=document.getElementById("fName").value.trim();
+  if(!name){document.getElementById("fName").focus();return}
+  var w=Math.max(1,+document.getElementById("fW").value||7), f=Math.max(1,+document.getElementById("fF").value||3);
+  if(editId){var p=plants.find(function(x){return x.id===editId});p.name=name;if(emo!==origEmo)p.art="";p.emoji=emo;p.photo=photo;p.wEvery=w;p.fMonths=f}
+  else plants.push({id:(sel=Date.now()),name:name,emoji:emo,photo:photo,wEvery:w,fMonths:f,water:[],fert:[]});
+  save(); render(); document.getElementById("dp").close();
+};
+
+/* 分頁：點擊與左右滑動 */
+document.querySelector(".tabs").onclick=function(e){var b=e.target.closest("[data-t]");if(b){tab=b.dataset.t;render()}};
+var sx=0,sy=0;
+var main=document.getElementById("detail");
+main.addEventListener("touchstart",function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+main.addEventListener("touchend",function(e){
+  var dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){tab=dx<0?"fert":"water";render()}
+},{passive:true});
+
+load(); render();
+setInterval(render,60000);
+})();
+</script>
+</body>
+</html>
